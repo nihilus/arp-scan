@@ -34,7 +34,6 @@ if test -n "$GCC"; then
              [Define to the compiler's unused pragma])
    CFLAGS="$CFLAGS -Wall -Wshadow -Wwrite-strings"
    GCC_WEXTRA
-   GCC_STACK_PROTECT_CC
    GCC_FORTIFY_SOURCE
    GCC_FORMAT_SECURITY
 dnl Uncomment the line below to compile with additional warnings enabled.
@@ -207,29 +206,6 @@ dnl   *cygwin* )
       AC_MSG_ERROR([Host operating system $host_os is not supported])
       ;;
 esac
-
-dnl GNU systems e.g. Linux have getopt_long_only, but many other systems
-dnl e.g. FreeBSD 4.3 and Solaris 8 do not.  For systems that don't have it,
-dnl use the GNU getopt sources (obtained from glibc).
-AC_CHECK_FUNC([getopt_long_only], ,
-  [ AC_LIBOBJ(getopt)
-    AC_LIBOBJ(getopt1)
-    AC_LIBSOURCE(getopt.h) ])
-
-dnl Do we have inet_aton?  Most systems do, but some e.g. Solaris don't
-dnl If we don't have it, then use Russ Allbery's implementation as a
-dnl replacement function.
-AC_CHECK_FUNC(inet_aton, , [ AC_LIBOBJ(inet_aton) ])
-
-dnl Check for strlcat and strlcpy.  If we don't have them, use the replacement
-dnl functions from OpenBSD.  Most modern C libraries have these functions,
-dnl but some such as as glibc don't.
-AC_CHECK_FUNC([strlcat],
-              [AC_DEFINE(HAVE_STRLCAT, 1, [Define to 1 if the C library includes the strlcat function])],
-              [AC_LIBOBJ(strlcat)])
-AC_CHECK_FUNC([strlcpy],
-              [AC_DEFINE(HAVE_STRLCPY, 1, [Define to 1 if the C library includes the strlcpy function])],
-              [AC_LIBOBJ(strlcpy)])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

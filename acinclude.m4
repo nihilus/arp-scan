@@ -211,7 +211,6 @@ done])dnl AC_CACHE_VAL
 LONG_LONG_INT_FORMAT=''
 
 case $pgac_cv_snprintf_long_long_int_format in
-  cross) AC_MSG_RESULT([cannot test (not on host machine)]);;
   ?*)    AC_MSG_RESULT([$pgac_cv_snprintf_long_long_int_format])
          LONG_LONG_INT_FORMAT=$pgac_cv_snprintf_long_long_int_format;;
   *)     AC_MSG_RESULT(none);;

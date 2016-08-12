@@ -78,7 +78,6 @@ static unsigned char source_mac[6];
 static int source_mac_flag = 0;
 static unsigned char *padding=NULL;
 static size_t padding_len=0;
-static struct hash_control *hash_table;
 static int localnet_flag=0;		/* Scan local network */
 static int llc_flag=0;			/* Use 802.2 LLC with SNAP */
 static int ieee_8021q_vlan=-1;		/* Use 802.1Q VLAN tagging if >= 0 */
@@ -133,7 +132,7 @@ main(int argc, char *argv[]) {
 /*
  *      Get program start time for statistics displayed on completion.
  */
-   Gettimeofday(&start_time);
+   gettimeofday(&start_time, NULL);
 /*
  *	Obtain network interface details unless we're reading
  *	from a pcap file or writing to a binary file.
@@ -332,25 +331,25 @@ main(int argc, char *argv[]) {
       char *fn;
       int count;
 
-      if ((hash_table = hash_new()) == NULL)
-         err_sys("hash_new");
+      if ((hcreate(26000)) == 0)
+         err_sys("hcreate");
 
       fn = get_mac_vendor_filename(ouifilename, DATADIR, OUIFILENAME);
-      count = add_mac_vendor(hash_table, fn);
+      count = add_mac_vendor(fn);
       if (verbose > 1 && count > 0)
          warn_msg("DEBUG: Loaded %d IEEE OUI/Vendor entries from %s.",
                   count, fn);
       free(fn);
 
       fn = get_mac_vendor_filename(iabfilename, DATADIR, IABFILENAME);
-      count = add_mac_vendor(hash_table, fn);
+      count = add_mac_vendor(fn);
       if (verbose > 1 && count > 0)
          warn_msg("DEBUG: Loaded %d IEEE IAB/Vendor entries from %s.",
                   count, fn);
       free(fn);
 
       fn = get_mac_vendor_filename(macfilename, DATADIR, MACFILENAME);
-      count = add_mac_vendor(hash_table, fn);
+      count = add_mac_vendor(fn);
       if (verbose > 1 && count > 0)
          warn_msg("DEBUG: Loaded %d MAC/Vendor entries from %s.",
                   count, fn);
@@ -428,7 +427,7 @@ main(int argc, char *argv[]) {
 /*
  *      Create and initialise array of pointers to host entries.
  */
-   helistptr = Malloc(num_hosts * sizeof(host_entry *));
+   helistptr = malloc(num_hosts * sizeof(host_entry *));
    for (i=0; i<num_hosts; i++)
       helistptr[i] = &helist[i];
 /*
@@ -446,13 +445,13 @@ main(int argc, char *argv[]) {
       if (!random_seed) {
          struct timeval tv;
 
-         Gettimeofday(&tv);
+         gettimeofday(&tv, NULL);
          random_seed = tv.tv_usec ^ getpid();	/* Unpredictable value */
       }
-      init_genrand(random_seed);
+      srand(random_seed);
 
       for (i=num_hosts-1; i>0; i--) {
-         r = (int)(genrand_real2() * i);  /* 0<=r<i */
+         r = (int)(rand() * i);  /* 0<=r<i */
          temp = helistptr[i];
          helistptr[i] = helistptr[r];
          helistptr[r] = temp;
@@ -508,7 +507,7 @@ main(int argc, char *argv[]) {
  *      Obtain current time and calculate deltas since last packet and
  *      last packet to this host.
  */
-      Gettimeofday(&now);
+      gettimeofday(&now, NULL);
 /*
  *      If the last packet was sent more than interval us ago, then we can
  *      potentially send a packet to the current host.
@@ -571,7 +570,7 @@ main(int argc, char *argv[]) {
                   }
                   first_timeout=0;
                }
-               Gettimeofday(&last_packet_time);
+               gettimeofday(&last_packet_time, NULL);
             } else {    /* Retry limit not reached for this host */
                if ((*cursor)->num_sent)
                   (*cursor)->timeout *= backoff_factor;
@@ -600,7 +599,7 @@ main(int argc, char *argv[]) {
    if (write_pkt_to_file)
       close(write_pkt_to_file);
 
-   Gettimeofday(&end_time);
+   gettimeofday(&end_time, NULL);
    timeval_diff(&end_time, &start_time, &elapsed_time);
    elapsed_seconds = (elapsed_time.tv_sec*1000 +
                       elapsed_time.tv_usec/1000) / 1000.0;
@@ -610,7 +609,22 @@ main(int argc, char *argv[]) {
              PACKAGE_STRING, num_hosts, elapsed_seconds,
              num_hosts/elapsed_seconds, responders);
    }
+	
+   hdestroy();
    return 0;
+}
+
+/* Fetch value from the hash table. */
+void
+fetch(const char *key, char *value)
+{
+	ENTRY e, *p;
+	e.key = (char *)key;
+	p = hsearch(e, FIND);
+	if (p) {
+		value = p->data;
+		printf("apfe: %s\n", value);
+	}
 }
 
 /*
@@ -679,7 +693,7 @@ display_packet(host_entry *he, arp_ether_ipv4 *arpei,
  */
    if (!quiet_flag) {
       char oui_string[13];	/* Space for full hw addr plus NULL */
-      const char *vendor=NULL;
+      char *vendor=NULL;
       int oui_end=12;
 
       snprintf(oui_string, 13, "%.2X%.2X%.2X%.2X%.2X%.2X",
@@ -687,7 +701,12 @@ display_packet(host_entry *he, arp_ether_ipv4 *arpei,
                arpei->ar_sha[3], arpei->ar_sha[4], arpei->ar_sha[5]);
       while (vendor == NULL && oui_end > 1) {
          oui_string[oui_end] = '\0';	/* Truncate oui string */
-         vendor = hash_find(hash_table, oui_string);
+		ENTRY e, *p;
+		e.key = oui_string;
+		p = hsearch(e, FIND);
+		if (p) {
+			vendor = p->data;
+		}
          oui_end--;
       }
       cp = msg;
@@ -860,7 +879,7 @@ send_packet(pcap_t *pcap_handle, host_entry *he,
 /*
  *	Update the last send times for this host.
  */
-   Gettimeofday(last_packet_time);
+   gettimeofday(last_packet_time, NULL);
    he->last_send_time.tv_sec  = last_packet_time->tv_sec;
    he->last_send_time.tv_usec = last_packet_time->tv_usec;
    he->num_sent++;
@@ -932,6 +951,7 @@ clean_up(pcap_t *pcap_handle) {
 void
 usage(int status, int detailed) {
    fprintf(stdout, "Usage: arp-scan [options] [hosts...]\n");
+#if 0
    fprintf(stdout, "\n");
    fprintf(stdout, "Target hosts must be specified on the command line unless the --file option is\n");
    fprintf(stdout, "given, in which case the targets are read from the specified file instead, or\n");
@@ -1196,8 +1216,10 @@ usage(int status, int detailed) {
    fprintf(stdout, "\n");
    fprintf(stdout, "Report bugs or send suggestions at %s\n", PACKAGE_BUGREPORT);
    fprintf(stdout, "See the arp-scan homepage at http://www.nta-monitor.com/tools-resources/security-tools/arp-scan/\n");
+#endif
    exit(status);
 }
+
 
 /*
  *      add_host_pattern -- Add one or more new host to the list.
@@ -1273,7 +1295,7 @@ add_host_pattern(const char *pattern, unsigned host_timeout) {
 /*
  *	Make a copy of pattern because we don't want to modify our argument.
  */
-   patcopy = dupstr(pattern);
+   patcopy = strdup(pattern);
 
    if (!(regexec(&ipslash_pat, patcopy, 0, NULL, 0))) { /* IPnet/bits */
 /*
@@ -1284,7 +1306,7 @@ add_host_pattern(const char *pattern, unsigned host_timeout) {
       if (!(inet_aton(patcopy, &in_val)))
          err_msg("ERROR: %s is not a valid IP address", patcopy);
       ipnet_val=ntohl(in_val.s_addr);	/* We need host byte order */
-      numbits=Strtoul(cp, 10);
+      numbits=strtoul(cp, NULL, 10);
       if (numbits<3 || numbits>32)
          err_msg("ERROR: Number of bits in %s must be between 3 and 32",
                  pattern);
@@ -1435,11 +1457,11 @@ add_host(const char *host_name, unsigned host_timeout, int numeric_only) {
    char *ga_err_msg;
 
    if (numeric_only) {
-      result = inet_pton(AF_INET, host_name, &addr);
+      result = inet_aton(host_name, &addr);
       if (result < 0) {
-         err_sys("ERROR: inet_pton failed for %s", host_name);
+         err_sys("ERROR: inet_aton failed for %s", host_name);
       } else if (result == 0) {
-         warn_msg("WARNING: \"%s\" is not a valid IPv4 address - target ignored");
+         warn_msg("WARNING: \"%s\" is not a valid IPv4 address - target ignored", host_name);
          return;
       }
    } else {
@@ -1453,10 +1475,10 @@ add_host(const char *host_name, unsigned host_timeout, int numeric_only) {
 
    if (!num_left) {	/* No entries left, allocate some more */
       if (helist)
-         helist=Realloc(helist, (num_hosts * sizeof(host_entry)) +
+         helist=realloc(helist, (num_hosts * sizeof(host_entry)) +
                         REALLOC_COUNT*sizeof(host_entry));
       else
-         helist=Malloc(REALLOC_COUNT*sizeof(host_entry));
+         helist=malloc(REALLOC_COUNT*sizeof(host_entry));
       num_left = REALLOC_COUNT;
    }
 
@@ -1816,10 +1838,10 @@ process_options(int argc, char *argv[]) {
             usage(EXIT_SUCCESS, 1);
             break;	/* NOTREACHED */
          case 'r':	/* --retry */
-            retry=Strtoul(optarg, 10);
+            retry=strtoul(optarg, NULL, 10);
             break;
          case 't':	/* --timeout */
-            timeout=Strtoul(optarg, 10);
+            timeout=strtoul(optarg, NULL, 10);
             break;
          case 'i':	/* --interval */
             interval=str_to_interval(optarg);
@@ -1835,7 +1857,7 @@ process_options(int argc, char *argv[]) {
             exit(0);
             break;	/* NOTREACHED */
          case 'n':	/* --snap */
-            snaplen=Strtol(optarg, 0);
+            snaplen=strtol(optarg, NULL, 0);
             break;
          case 'I':	/* --interface */
             if_name = make_message("%s", optarg);
@@ -1869,19 +1891,19 @@ process_options(int argc, char *argv[]) {
             if ((strcmp(optarg,"dest")) == 0) {
                arp_spa_is_tpa = 1;
             } else {
-               if ((inet_pton(AF_INET, optarg, &source_ip_address)) <= 0)
-                  err_sys("inet_pton failed for %s", optarg);
+               if ((inet_aton(optarg, &source_ip_address)) <= 0)
+                  err_sys("inet_aton failed for %s", optarg);
                memcpy(&arp_spa, &(source_ip_address.s_addr), sizeof(arp_spa));
             }
             break;
          case 'o':	/* --arpop */
-            arp_op=Strtol(optarg, 0);
+            arp_op=strtol(optarg, NULL, 0);
             break;
          case 'H':	/* --arphrd */
-            arp_hrd=Strtol(optarg, 0);
+            arp_hrd=strtol(optarg, NULL, 0);
             break;
          case 'p':	/* --arppro */
-            arp_pro=Strtol(optarg, 0);
+            arp_pro=strtol(optarg, NULL, 0);
             break;
          case 'T':	/* --destaddr */
             result = get_ether_addr(optarg, target_mac);
@@ -1889,10 +1911,10 @@ process_options(int argc, char *argv[]) {
                err_msg("Invalid target MAC address: %s", optarg);
             break;
          case 'P':	/* --arppln */
-            arp_pln=Strtol(optarg, 0);
+            arp_pln=strtol(optarg, NULL, 0);
             break;
          case 'a':	/* --arphln */
-            arp_hln=Strtol(optarg, 0);
+            arp_hln=strtol(optarg, NULL, 0);
             break;
          case 'A':	/* --padding */
             if (strlen(optarg) % 2)     /* Length is odd */
@@ -1900,7 +1922,7 @@ process_options(int argc, char *argv[]) {
             padding=hex2data(optarg, &padding_len);
             break;
          case 'y':	/* --prototype */
-            eth_pro=Strtol(optarg, 0);
+            eth_pro=strtol(optarg, NULL, 0);
             break;
          case 'u':	/* --arpsha */
             result = get_ether_addr(optarg, arp_sha);
@@ -1926,7 +1948,7 @@ process_options(int argc, char *argv[]) {
             llc_flag = 1;
             break;
          case 'Q':	/* --vlan */
-            ieee_8021q_vlan = Strtol(optarg, 0);
+            ieee_8021q_vlan = strtol(optarg, NULL, 0);
             break;
          case 'W':	/* --pcapsavefile */
             strlcpy(pcap_savefile, optarg, sizeof(pcap_savefile));
@@ -1946,7 +1968,7 @@ process_options(int argc, char *argv[]) {
             plain_flag = 1;
             break;
          case OPT_RANDOMSEED: /* --randomseed */
-            random_seed=Strtoul(optarg, 0);
+            random_seed=strtoul(optarg, NULL, 0);
             break;
          default:	/* Unknown option */
             usage(EXIT_FAILURE, 0);
@@ -2283,7 +2305,7 @@ unmarshal_arp_pkt(const unsigned char *buffer, size_t buf_len,
  *	The number of entries added to the hash table.
  */
 int
-add_mac_vendor(struct hash_control *table, const char *map_filename) {
+add_mac_vendor(const char *map_filename) {
    static int first_call=1;
    FILE *fp;	/* MAC/Vendor file handle */
    static const char *oui_pat_str = "([^\t]+)\t[\t ]*([^\t\r\n]+)";
@@ -2296,7 +2318,7 @@ add_mac_vendor(struct hash_control *table, const char *map_filename) {
    char line[MAXLINE];
    int line_count;
    int result;
-   const char *result_str;
+
 /*
  *	Compile the regex pattern if this is the first time we
  *	have been called.
@@ -2334,8 +2356,8 @@ add_mac_vendor(struct hash_control *table, const char *map_filename) {
       } else {
          key_len = pmatch[1].rm_eo - pmatch[1].rm_so;
          data_len = pmatch[2].rm_eo - pmatch[2].rm_so;
-         key=Malloc(key_len+1);
-         data=Malloc(data_len+1);
+         key=malloc(key_len+1);
+         data=malloc(data_len+1);
 /*
  * We cannot use strlcpy because the source is not guaranteed to be null
  * terminated. Therefore we use strncpy, specifying one less that the total
@@ -2345,14 +2367,14 @@ add_mac_vendor(struct hash_control *table, const char *map_filename) {
          key[key_len] = '\0';
          strncpy(data, line+pmatch[2].rm_so, data_len);
          data[data_len] = '\0';
-         if ((result_str = hash_insert(table, key, data)) != NULL) {
-/* Ignore "exists" because there are a few duplicates in the IEEE list */
-            if ((strcmp(result_str, "exists")) != 0) {
-               warn_msg("hash_insert(%s, %s): %s", key, data, result_str);
-            }
-         } else {
+
+		ENTRY e, *p;
+		e.key = key;
+		p = hsearch(e, ENTER);
+		if (p == NULL)
+			warn_msg("hsearch");
+		p->data = (void *)data;
             line_count++;
-         }
       }
    }
    fclose(fp);

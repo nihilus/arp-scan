@@ -132,7 +132,7 @@ hex2data(const char *string, size_t *data_len) {
    }
 
    len = strlen(string) / 2;
-   data = Malloc(len);
+   data = malloc(len);
    cp = data;
    for (i=0; i<len; i++)
       *cp++=hstr_i(&string[i*2]);
@@ -161,7 +161,7 @@ make_message(const char *fmt, ...) {
    size_t size = 100;
    char *p;
    va_list ap;
-   p = Malloc (size);
+   p = malloc (size);
    while (1) {
       /* Try to print in the allocated space. */
       va_start(ap, fmt);
@@ -175,7 +175,7 @@ make_message(const char *fmt, ...) {
          size = n+1; /* precisely what is needed */
       else           /* glibc 2.0 */
          size *= 2;  /* twice the old size */
-      p = Realloc (p, size);
+      p = realloc (p, size);
    }
 }
 
@@ -208,14 +208,14 @@ hexstring(const unsigned char *data, size_t size) {
  *	If the input data is NULL, return an empty string.
  */
    if (data == NULL) {
-      result = Malloc(1);
+      result = malloc(1);
       result[0] = '\0';
       return result;
    }
 /*
  *	Create and return hex string.
  */
-   result = Malloc(2*size + 1);
+   result = malloc(2*size + 1);
    cp = data;
    r = result;
    for (i=0; i<size; i++) {
@@ -290,7 +290,7 @@ str_to_bandwidth(const char *bandwidth_string) {
    int multiplier=1;
    int end_char;
 
-   bandwidth_str=dupstr(bandwidth_string);	/* Writable copy */
+   bandwidth_str=strdup(bandwidth_string);	/* Writable copy */
    bandwidth_len=strlen(bandwidth_str);
    end_char = bandwidth_str[bandwidth_len-1];
    if (!isdigit(end_char)) {	/* End character is not a digit */
@@ -310,7 +310,7 @@ str_to_bandwidth(const char *bandwidth_string) {
             break;
       }
    }
-   value=Strtoul(bandwidth_str, 10);
+   value=strtoul(bandwidth_str, NULL, 10);
    free(bandwidth_str);
    return multiplier * value;
 }
@@ -334,7 +334,7 @@ str_to_interval(const char *interval_string) {
    int multiplier=1000;
    int end_char;
 
-   interval_str=dupstr(interval_string);	/* Writable copy */
+   interval_str=strdup(interval_string);	/* Writable copy */
    interval_len=strlen(interval_str);
    end_char = interval_str[interval_len-1];
    if (!isdigit(end_char)) {	/* End character is not a digit */
@@ -354,35 +354,7 @@ str_to_interval(const char *interval_string) {
             break;
       }
    }
-   value=Strtoul(interval_str, 10);
+   value=strtoul(interval_str, NULL, 10);
    free(interval_str);
    return multiplier * value;
-}
-
-/*
- *	dupstr -- duplicate a string
- *
- *	Inputs:
- *
- *	str	The string to duplcate
- *
- *	Returns:
- *
- *	A pointer to the duplicate string.
- *
- *	This is a replacement for the common but non-standard "strdup"
- *	function.
- *
- *	The returned pointer points to Malloc'ed memory, which must be
- *	free'ed by the caller.
- */
-char *
-dupstr(const char *str) {
-   char *cp;
-   size_t len;
-
-   len = strlen(str) + 1;	/* Allow space for terminating NULL */
-   cp = Malloc(len);
-   strlcpy(cp, str, len);
-   return cp;
 }

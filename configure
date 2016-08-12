@@ -3998,40 +3998,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   fi
 
 
-  ssp_cc=yes
-  if test "X$CC" != "X"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CC} accepts -fstack-protector" >&5
-$as_echo_n "checking whether ${CC} accepts -fstack-protector... " >&6; }
-    ssp_old_cflags="$CFLAGS"
-    CFLAGS="$CFLAGS -fstack-protector"
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-
-else
-  ssp_cc=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    echo $ssp_cc
-    if test "X$ssp_cc" = "Xno"; then
-      CFLAGS="$ssp_old_cflags"
-    else
-
-$as_echo "#define ENABLE_SSP_CC 1" >>confdefs.h
-
-    fi
-  fi
-
-
    if test "x$CC" != "X"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CC} accepts -D_FORTIFY_SOURCE" >&5
 $as_echo_n "checking whether ${CC} accepts -D_FORTIFY_SOURCE... " >&6; }
@@ -5305,8 +5271,6 @@ fi
 LONG_LONG_INT_FORMAT=''
 
 case $pgac_cv_snprintf_long_long_int_format in
-  cross) { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot test (not on host machine)" >&5
-$as_echo "cannot test (not on host machine)" >&6; };;
   ?*)    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $pgac_cv_snprintf_long_long_int_format" >&5
 $as_echo "$pgac_cv_snprintf_long_long_int_format" >&6; }
          LONG_LONG_INT_FORMAT=$pgac_cv_snprintf_long_long_int_format;;
@@ -5478,68 +5442,6 @@ esac
       as_fn_error $? "Host operating system $host_os is not supported" "$LINENO" 5
       ;;
 esac
-
-ac_fn_c_check_func "$LINENO" "getopt_long_only" "ac_cv_func_getopt_long_only"
-if test "x$ac_cv_func_getopt_long_only" = xyes; then :
-
-else
-   case " $LIBOBJS " in
-  *" getopt.$ac_objext "* ) ;;
-  *) LIBOBJS="$LIBOBJS getopt.$ac_objext"
- ;;
-esac
-
-    case " $LIBOBJS " in
-  *" getopt1.$ac_objext "* ) ;;
-  *) LIBOBJS="$LIBOBJS getopt1.$ac_objext"
- ;;
-esac
-
-
-fi
-
-
-ac_fn_c_check_func "$LINENO" "inet_aton" "ac_cv_func_inet_aton"
-if test "x$ac_cv_func_inet_aton" = xyes; then :
-
-else
-   case " $LIBOBJS " in
-  *" inet_aton.$ac_objext "* ) ;;
-  *) LIBOBJS="$LIBOBJS inet_aton.$ac_objext"
- ;;
-esac
-
-fi
-
-
-ac_fn_c_check_func "$LINENO" "strlcat" "ac_cv_func_strlcat"
-if test "x$ac_cv_func_strlcat" = xyes; then :
-
-$as_echo "#define HAVE_STRLCAT 1" >>confdefs.h
-
-else
-  case " $LIBOBJS " in
-  *" strlcat.$ac_objext "* ) ;;
-  *) LIBOBJS="$LIBOBJS strlcat.$ac_objext"
- ;;
-esac
-
-fi
-
-ac_fn_c_check_func "$LINENO" "strlcpy" "ac_cv_func_strlcpy"
-if test "x$ac_cv_func_strlcpy" = xyes; then :
-
-$as_echo "#define HAVE_STRLCPY 1" >>confdefs.h
-
-else
-  case " $LIBOBJS " in
-  *" strlcpy.$ac_objext "* ) ;;
-  *) LIBOBJS="$LIBOBJS strlcpy.$ac_objext"
- ;;
-esac
-
-fi
-
 
 ac_config_files="$ac_config_files Makefile"
 

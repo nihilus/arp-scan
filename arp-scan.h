@@ -122,7 +122,7 @@
 #endif
 #endif
 
-#include "hash.h"		/* Hash table functions */
+#include <search.h>		/* Hash table functions */
 
 /* Defines */
 
@@ -195,14 +195,6 @@ typedef struct {
 } arp_ether_ipv4;
 
 /* Functions */
-
-#ifndef HAVE_STRLCAT
-size_t strlcat(char *dst, const char *src, size_t siz);
-#endif
-#ifndef HAVE_STRLCPY
-size_t strlcpy(char *dst, const char *src, size_t siz);
-#endif
-
 void err_sys(const char *, ...);
 void warn_sys(const char *, ...);
 void err_msg(const char *, ...);
@@ -238,23 +230,8 @@ unsigned char *hex2data(const char *, size_t *);
 unsigned int hstr_i(const char *);
 char *hexstring(const unsigned char *, size_t);
 int get_ether_addr(const char *, unsigned char *);
-int add_mac_vendor(struct hash_control *, const char *);
+int add_mac_vendor(const char *);
 char *get_mac_vendor_filename(const char *, const char *, const char *);
 /* Wrappers */
-int Gettimeofday(struct timeval *);
-void *Malloc(size_t);
-void *Realloc(void *, size_t);
-unsigned long int Strtoul(const char *, int);
-long int Strtol(const char *, int);
 unsigned str_to_bandwidth(const char *);
 unsigned str_to_interval(const char *);
-char *dupstr(const char *);
-/* MT19937 prototypes */
-void init_genrand(unsigned long);
-void init_by_array(unsigned long[], int);
-unsigned long genrand_int32(void);
-long genrand_int31(void);
-double genrand_real1(void);
-double genrand_real2(void);
-double genrand_real3(void);
-double genrand_res53(void);

@@ -21,9 +21,6 @@
 /* Define to the compiler's unused pragma */
 #undef ATTRIBUTE_UNUSED
 
-/* Define if SSP C support is enabled. */
-#undef ENABLE_SSP_CC
-
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
 
@@ -104,12 +101,6 @@
 
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
-
-/* Define to 1 if the C library includes the strlcat function */
-#undef HAVE_STRLCAT
-
-/* Define to 1 if the C library includes the strlcpy function */
-#undef HAVE_STRLCPY
 
 /* Define to 1 if you have the <stropts.h> header file. */
 #undef HAVE_STROPTS_H

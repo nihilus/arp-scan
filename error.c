@@ -37,6 +37,7 @@ err_sys(const char *fmt,...) {
    va_start(ap, fmt);
    err_print(1, fmt, ap);
    va_end(ap);
+   hdestroy();
    exit(EXIT_FAILURE);
 }
 
@@ -62,6 +63,7 @@ err_msg(const char *fmt,...) {
    va_start(ap, fmt);
    err_print(0, fmt, ap);
    va_end(ap);
+   hdestroy();
    exit(EXIT_FAILURE);
 }
 
@@ -93,7 +95,7 @@ err_print (int errnoflag, const char *fmt, va_list ap) {
    n=strlen(buf);
    if (errnoflag)
      snprintf(buf+n, MAXLINE-n, ": %s", strerror(errno_save));
-   strlcat(buf, "\n", sizeof(buf));
+   strncat(buf, "\n", strlen(buf));
 
    fflush(stdout);	/* In case stdout and stderr are the same */
    fputs(buf, stderr);

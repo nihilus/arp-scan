@@ -82,7 +82,7 @@ get_hardware_address(const char *if_name, unsigned char hw_address[]) {
    if (sysctl(mib, 6, NULL, &len, NULL, 0) < 0)
       err_sys("sysctl");
 
-   buf = Malloc(len);
+   buf = malloc(len);
 
    if (sysctl(mib, 6, buf, &len, NULL, 0) < 0)
       err_sys("sysctl");
