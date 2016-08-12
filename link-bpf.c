@@ -105,8 +105,7 @@ get_hardware_address(const char *if_name, unsigned char hw_address[]) {
    }
 
    if (p >= buf + len)
-      err_msg("Could not get hardware address for interface %s",
-              if_name);
+      err_msg("Could not get hardware address for interface %s", if_name);
 
    memcpy(hw_address, sdl->sdl_data + sdl->sdl_nlen, ETH_ALEN);
    free(buf);

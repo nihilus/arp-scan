@@ -123,6 +123,7 @@
 #endif
 
 #include <search.h>		/* Hash table functions */
+#include <net/ethernet.h>
 
 /* Defines */
 
@@ -196,7 +197,6 @@ typedef struct {
 
 /* Functions */
 void err_sys(const char *, ...);
-void warn_sys(const char *, ...);
 void err_msg(const char *, ...);
 void warn_msg(const char *, ...);
 void err_print(int, const char *, va_list);

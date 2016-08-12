@@ -25,8 +25,6 @@
 
 #include "arp-scan.h"
 
-int daemon_proc;	/* Non-zero if process is a daemon */
-
 /*
  *	Function to handle fatal system call errors.
  */
@@ -39,18 +37,6 @@ err_sys(const char *fmt,...) {
    va_end(ap);
    hdestroy();
    exit(EXIT_FAILURE);
-}
-
-/*
- *	Function to handle non-fatal system call errors.
- */
-void
-warn_sys(const char *fmt,...) {
-   va_list ap;
-
-   va_start(ap, fmt);
-   err_print(1, fmt, ap);
-   va_end(ap);
 }
 
 /*

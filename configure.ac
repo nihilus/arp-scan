@@ -29,6 +29,8 @@ AC_ARG_ENABLE(gcov,
    ] )
 dnl Checks for programs.
 AC_PROG_CC
+AC_PROG_LIBTOOL
+
 if test -n "$GCC"; then
    AC_DEFINE([ATTRIBUTE_UNUSED], [__attribute__ ((__unused__))],
              [Define to the compiler's unused pragma])

@@ -68,10 +68,9 @@ link_open(const char *device) {
    handle = malloc(sizeof(*handle));
    memset(handle, '\0', sizeof(*handle));
    if ((handle->fd = socket(PF_PACKET, SOCK_RAW, 0)) < 0) {
-      warn_msg("ERROR: Cannot open raw packet socket");
       err_sys("socket");
    }
-   strncpy(handle->ifr.ifr_name, device, sizeof(handle->ifr.ifr_name));
+   strlcpy(handle->ifr.ifr_name, device, sizeof(handle->ifr.ifr_name));
    if ((ioctl(handle->fd, SIOCGIFINDEX, &(handle->ifr))) != 0)
       err_sys("ioctl");
    handle->sll.sll_family = PF_PACKET;

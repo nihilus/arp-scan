@@ -261,7 +261,6 @@ main(int argc, char *argv[]) {
          memset(&localnet, '\0', sizeof(localnet));
          memset(&netmask, '\0', sizeof(netmask));
          if (localnet_flag) {
-            warn_msg("ERROR: Could not obtain interface IP address and netmask");
             err_msg("ERROR: pcap_lookupnet: %s", errbuf);
          }
       }
@@ -921,9 +920,9 @@ clean_up(pcap_t *pcap_handle) {
 
    if (!plain_flag) {
       if (pcap_handle && !pkt_read_file_flag) {
-         if ((pcap_stats(pcap_handle, &stats)) < 0)
+         if ((pcap_stats(pcap_handle, &stats)) < 0){
             err_msg("pcap_stats: %s", pcap_geterr(pcap_handle));
-
+         }
          printf("%u packets received by filter, %u packets dropped by kernel\n",
                 stats.ps_recv, stats.ps_drop);
       }
@@ -2328,15 +2327,14 @@ add_mac_vendor(const char *map_filename) {
       if ((result=regcomp(&oui_pat, oui_pat_str, REG_EXTENDED))) {
          char reg_errbuf[MAXLINE];
          regerror(result, &oui_pat, reg_errbuf, MAXLINE);
-         err_msg("ERROR: cannot compile regex pattern \"%s\": %s",
-                 oui_pat_str, reg_errbuf);
+         err_msg("ERROR: cannot compile regex pattern \"%s\": %s", oui_pat_str, reg_errbuf);
       }
    }
 /*
  *	Open the file.
  */
    if ((fp = fopen(map_filename, "r")) == NULL) {
-      warn_sys("WARNING: Cannot open MAC/Vendor file %s", map_filename);
+      warn_msg("WARNING: Cannot open MAC/Vendor file %s", map_filename);
       return 0;
    }
    line_count=0;
@@ -2451,7 +2449,6 @@ get_source_ip(const char *interface_name, uint32_t *ip_addr) {
       device=device->next;
    }
    if (device == NULL) {
-      warn_msg("ERROR: Could not find interface: %s", interface_name);
       err_msg("ERROR: Check that the interface exists and is up");
    }
 
