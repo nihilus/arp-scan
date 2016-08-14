@@ -190,7 +190,7 @@ link_open(const char *device) {
    link_t *handle;
    int ppa;
 
-   handle = malloc(sizeof(*handle));
+   handle = malloc(1, sizeof(*handle));
    memset(handle, '\0', sizeof(*handle));
 
 #ifdef HAVE_SYS_DLPIHDR_H
@@ -222,7 +222,7 @@ link_open(const char *device) {
    }
 #endif
    memset(&(handle->ifr), 0, sizeof(struct ifreq));
-   strncpy(handle->ifr.ifr_name, device, sizeof(handle->ifr.ifr_name));
+   strncpy(handle->ifr.ifr_name, device, IFNAMSIZ);
    dlp = (union DL_primitives *)buf;
    dlp->info_req.dl_primitive = DL_INFO_REQ;
 
