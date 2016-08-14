@@ -123,7 +123,6 @@
 #endif
 
 #include <search.h>		/* Hash table functions */
-#include <net/ethernet.h>
 
 /* Defines */
 

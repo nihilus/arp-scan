@@ -613,19 +613,6 @@ main(int argc, char *argv[]) {
    return 0;
 }
 
-/* Fetch value from the hash table. */
-void
-fetch(const char *key, char *value)
-{
-	ENTRY e, *p;
-	e.key = (char *)key;
-	p = hsearch(e, FIND);
-	if (p) {
-		value = p->data;
-		printf("apfe: %s\n", value);
-	}
-}
-
 /*
  *	display_packet -- Check and display received packet
  *
@@ -1663,11 +1650,9 @@ recvfrom_wto(int sock_fd, int tmo, pcap_t *pcap_handle) {
  */
 void
 dump_list(void) {
-   unsigned i;
-
    printf("Host List:\n\n");
    printf("Entry\tIP Address\n");
-   for (i=0; i<num_hosts; i++)
+   for (unsigned int i=0; i<num_hosts; i++)
       printf("%u\t%s\n", i+1, my_ntoa(helistptr[i]->addr));
    printf("\nTotal of %u host entries.\n\n", num_hosts);
 }
@@ -1991,6 +1976,7 @@ process_options(int argc, char *argv[]) {
  */
 void
 arp_scan_version (void) {
+#if 0
    fprintf(stdout, "%s\n\n", PACKAGE_STRING);
    fprintf(stdout, "Copyright (C) 2005-2013 Roy Hills, NTA Monitor Ltd.\n");
    fprintf(stdout, "arp-scan comes with NO WARRANTY to the extent permitted by law.\n");
@@ -1999,6 +1985,7 @@ arp_scan_version (void) {
    fprintf(stdout, "For more information about these matters, see the file named COPYING.\n");
    fprintf(stdout, "\n");
    fprintf(stdout, "%s\n", pcap_lib_version());
+#endif
 }
 
 /*
