@@ -65,7 +65,7 @@ static link_t *
 link_open(const char *device) {
    link_t *handle;
 
-   handle = calloc(sizeof(*handle));
+   handle = malloc(sizeof(*handle));
    memset(handle, '\0', sizeof(*handle));
    if ((handle->fd = socket(PF_PACKET, SOCK_RAW, 0)) < 0) {
       err_sys("socket");

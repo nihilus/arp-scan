@@ -1650,9 +1650,10 @@ recvfrom_wto(int sock_fd, int tmo, pcap_t *pcap_handle) {
  */
 void
 dump_list(void) {
+   unsigned int i=0
    printf("Host List:\n\n");
    printf("Entry\tIP Address\n");
-   for (unsigned int i=0; i<num_hosts; i++)
+   for (; i<num_hosts; i++)
       printf("%u\t%s\n", i+1, my_ntoa(helistptr[i]->addr));
    printf("\nTotal of %u host entries.\n\n", num_hosts);
 }
